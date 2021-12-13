@@ -1,0 +1,93 @@
+sbit LCD_RS at RE2_bit;
+sbit LCD_EN at RE1_bit;
+sbit LCD_D0 at RD0_bit;
+sbit LCD_D1 at RD1_bit;
+sbit LCD_D2 at RD2_bit;
+sbit LCD_D3 at RD3_bit;
+sbit LCD_D4 at RD4_bit;
+sbit LCD_D5 at RD5_bit;
+sbit LCD_D6 at RD6_bit;
+sbit LCD_D7 at RD7_bit;
+
+sbit LCD_RS_Direction at TRISE2_bit;
+sbit LCD_EN_Direction at TRISE1_bit;
+sbit LCD_D0_Direction at TRISD0_bit;
+sbit LCD_D1_Direction at TRISD1_bit;
+sbit LCD_D2_Direction at TRISD2_bit;
+sbit LCD_D3_Direction at TRISD3_bit;
+sbit LCD_D4_Direction at TRISD4_bit;
+sbit LCD_D5_Direction at TRISD5_bit;
+sbit LCD_D6_Direction at TRISD6_bit;
+sbit LCD_D7_Direction at TRISD7_bit;
+
+int tmp;
+char tmpword[5];
+
+int min=10;
+char minword[5];
+
+int max=45;
+char maxword[5];
+
+void main() {
+
+ ADC_Init();
+ Lcd_Init();
+
+ ANSELA=0xff;
+ TRISA=0xff;
+ ANSELB=0;
+ TRISB=0xff;
+ ANSELC=0;
+ TRISC=0;
+
+ Lcd_Cmd(_LCD_CLEAR);
+ Lcd_Cmd(_LCD_CURSOR_OFF);
+ Lcd_Out(1,1, "Temp:");
+ Lcd_Out(2,1, "Mn:");
+ Lcd_Out(2,8, "Mx:");
+
+ while(1) {
+
+    tmp=ADC_Read(2);
+    tmp=tmp*5/10;
+
+    sprintf(tmpword,"%d",tmp);
+    Lcd_Out(1,7, tmpword);
+    sprintf(minword,"%d",min);
+    Lcd_Out(2,5, minword);
+    sprintf(maxword,"%d",max);
+    Lcd_Out(2,12, maxword);
+
+    if (PORTB.RB4==1) {
+       min++;
+    }
+    if (PORTB.RB3==1) {
+       min--;
+    }
+    if (PORTB.RB1==1) {
+       max++;
+    }
+    if (PORTB.RB2==1) {
+       max--;
+    }
+
+    if (tmp>max) {
+       PORTC.RC1=1;
+       PORTC.RC2=1;
+       PORTC.RC5=0;
+    }
+    else if (tmp<min) {
+       PORTC.RC1=1;
+       PORTC.RC2=0;
+       PORTC.RC5=1;
+    }
+    else {
+       PORTC.RC1=0;
+       PORTC.RC2=0;
+       PORTC.RC5=0;
+    }
+      Delay_ms(100);
+    }
+
+}
